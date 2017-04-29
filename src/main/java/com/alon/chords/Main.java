@@ -10,20 +10,15 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Random;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private HashMap<String, Clip> sounds;
     private HashMap<String, JCheckBox> checkboxes;
     private JFrame selectionFrame;
-    private LinkedList<String> selectedChords;
-    private String lastPlayedChord;
 
     public static void main(String[] args) throws Exception {
         logger.info("starting");
@@ -62,54 +57,7 @@ public class Main {
 
     private void start(ActionEvent actionEvent) {
         selectionFrame.setVisible(false);
-
-        final JFrame gameFrame = new JFrame();
-        gameFrame.setLayout(new FlowLayout());
-        gameFrame.setSize(400, 200);
-        selectedChords = new LinkedList<>();
-        for (String name : checkboxes.keySet()) {
-            JCheckBox checkBox = checkboxes.get(name);
-            if (checkBox.isSelected()) {
-                selectedChords.add(name);
-            }
-        }
-
-        for (String name : selectedChords) {
-            JButton button = new JButton(name);
-            button.addActionListener(this::guess);
-            button.setSize(100, 100);
-            gameFrame.add(button);
-        }
-
-        gameFrame.setVisible(true);
-        gameFrame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                gameFrame.setVisible(false);
-                selectionFrame.setVisible(true);
-                gameFrame.dispose();
-            }
-        });
-
-        playRandom();
-    }
-
-    private void guess(ActionEvent actionEvent) {
-        JButton button = (JButton) actionEvent.getSource();
-        String guessed = button.getText();
-        if (guessed.equals(lastPlayedChord)) {
-            playRandom();
-        } else {
-
-        }
-    }
-
-    private void playRandom() {
-        int playIndex = new Random().nextInt(selectedChords.size());
-        lastPlayedChord = selectedChords.get(playIndex);
-        Clip clip = sounds.get(lastPlayedChord);
-        clip.setMicrosecondPosition(0);
-        clip.start();
+        new Game(checkboxes, this);
     }
 
     private void loadSounds() throws Exception {
@@ -127,5 +75,13 @@ public class Main {
             clip.open(stream);
             sounds.put(file.getName().replace(".wav", ""), clip);
         }
+    }
+
+    void back() {
+        selectionFrame.setVisible(true);
+    }
+
+    HashMap<String, Clip> getSounds() {
+        return sounds;
     }
 }
