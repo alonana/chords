@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -77,7 +78,7 @@ class Game {
         return buttonsPanel;
     }
 
-    private void guess(ActionEvent actionEvent)  {
+    private void guess(ActionEvent actionEvent) {
         try {
             guessWrapped(actionEvent);
         } catch (Exception e) {
@@ -127,7 +128,7 @@ class Game {
     }
 
     private void playEffect(String name) throws Exception {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("effect/" + name + ".wav");
+        InputStream in = new BufferedInputStream(getClass().getClassLoader().getResourceAsStream("effect/" + name + ".wav"));
         AudioInputStream stream = AudioSystem.getAudioInputStream(in);
         AudioFormat format = stream.getFormat();
         DataLine.Info info = new DataLine.Info(Clip.class, format);

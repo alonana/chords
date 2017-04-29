@@ -10,7 +10,8 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -66,14 +67,15 @@ public class Main {
         Resource[] resources = resolver.getResources("wav/*.wav");
         sounds = new HashMap<>();
         for (Resource resource : resources) {
-            File file = resource.getFile();
-            logger.info("loading wav file {}", file.getName());
-            AudioInputStream stream = AudioSystem.getAudioInputStream(file);
+            String name = resource.getFilename();
+            logger.info("loading wav file {}", name);
+            InputStream in = new BufferedInputStream(getClass().getClassLoader().getResourceAsStream("wav/" + name));
+            AudioInputStream stream = AudioSystem.getAudioInputStream(in);
             AudioFormat format = stream.getFormat();
             DataLine.Info info = new DataLine.Info(Clip.class, format);
             Clip clip = (Clip) AudioSystem.getLine(info);
             clip.open(stream);
-            sounds.put(file.getName().replace(".wav", ""), clip);
+            sounds.put(name.replace(".wav", ""), clip);
         }
     }
 
