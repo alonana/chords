@@ -3,24 +3,24 @@ package com.alon.chords;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
-class Game {
+class Game implements KeyListener {
     private final Main main;
     private LinkedList<String> selectedChords;
     private String lastPlayedChord;
     private JLabel pointsLabel;
     private LinkedList<JButton> buttons;
+    private Random random;
 
     Game(HashMap<String, JCheckBox> checkboxes, Main main) {
         this.main = main;
+        random = new Random();
         selectedChords = new LinkedList<>();
         for (String name : checkboxes.keySet()) {
             JCheckBox checkBox = checkboxes.get(name);
@@ -59,6 +59,10 @@ class Game {
                 main.back();
             }
         });
+
+        gameFrame.setFocusable(true); // set focusable to true
+        gameFrame.requestFocusInWindow();
+        gameFrame.addKeyListener(this);
         resetButtons();
         gameFrame.setVisible(true);
     }
@@ -68,28 +72,33 @@ class Game {
         buttonsPanel.setLayout(new GridLayout(1, selectedChords.size()));
 
         buttons = new LinkedList<>();
+        int id = 1;
         for (String name : selectedChords) {
-            JButton button = new JButton(name);
+            JButton button = new JButton("<html>"+name+"<br>(" + id + ")</html>");
             buttons.add(button);
             button.setSize(300, 300);
             button.addActionListener(this::guess);
             buttonsPanel.add(button);
+            id++;
         }
         return buttonsPanel;
     }
 
     private void guess(ActionEvent actionEvent) {
         try {
-            guessWrapped(actionEvent);
+            JButton button = (JButton) actionEvent.getSource();
+            guessWrapped(button);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
-    private void guessWrapped(ActionEvent actionEvent) throws Exception {
-        JButton button = (JButton) actionEvent.getSource();
+    private void guessWrapped(JButton button) throws Exception {
         String guessed = button.getText();
+        guessed = guessed.replace("<html>","");
+        guessed = guessed.substring(0, guessed.indexOf("<"));
+
         int points = Integer.parseInt(pointsLabel.getText());
         if (guessed.equals(lastPlayedChord)) {
             playEffect("ok");
@@ -102,7 +111,7 @@ class Game {
             button.setEnabled(false);
             button.setBackground(Color.RED);
             button.setForeground(Color.BLACK);
-            points--;
+            points -= 2;
             if (points < 0) {
                 points = 0;
             }
@@ -120,7 +129,7 @@ class Game {
     }
 
     private void playRandom() {
-        int playIndex = new Random().nextInt(selectedChords.size());
+        int playIndex = random.nextInt(selectedChords.size());
         lastPlayedChord = selectedChords.get(playIndex);
         Clip clip = main.getSounds().get(lastPlayedChord);
         clip.setMicrosecondPosition(0);
@@ -135,5 +144,24 @@ class Game {
         Clip clip = (Clip) AudioSystem.getLine(info);
         clip.open(stream);
         clip.start();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int index = e.getKeyCode() - '1';
+        if (index < 0 || index >= buttons.size()) {
+            return;
+        }
+        buttons.get(index).doClick();
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }
