@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
@@ -28,6 +29,7 @@ class Game implements KeyListener {
                 selectedChords.add(name);
             }
         }
+        Collections.shuffle(selectedChords);
 
         buildGui(main);
         playRandom();
